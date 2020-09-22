@@ -1,3 +1,5 @@
+extern crate web_sys;
+
 mod utils;
 
 use std::fmt;
@@ -15,6 +17,15 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 pub enum Cell {
     Dead = 0,
     Alive = 1,
+}
+
+impl Cell {
+    fn toggle(&mut self) {
+        *self = match *self {
+            Cell::Dead => Cell::Alive,
+            Cell::Alive => Cell::Dead,
+        };
+    }
 }
 
 #[wasm_bindgen]
@@ -60,6 +71,8 @@ impl Universe {
     }
 
     pub fn new() -> Universe {
+        utils::set_panic_hook();
+
         let width = 64;
         let height = 64;
 
@@ -109,6 +122,11 @@ impl Universe {
     pub fn set_height(&mut self, height: u32) {
         self.height = height;
         self.cells = (0..self.width * height).map(|_i| Cell::Dead).collect();
+    }
+
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        let idx = self.get_index(row, column);
+        self.cells[idx].toggle();
     }
 }
 
